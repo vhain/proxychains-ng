@@ -293,8 +293,7 @@ static void get_chain_data(proxy_data * pd, unsigned int *proxy_count, chain_typ
 					}
 
 					if(num_localnet_addr < MAX_LOCALNET) {
-						int error;
-						if(!strncpy(localdomain[num_localdomain], host, strlen(host)) {
+						if(!strncpy(localdomain[num_localdomain], host, strlen(host))) {
 							fprintf(stderr, "localdomain copy error\n");
 							exit(1);
 						}
@@ -398,6 +397,8 @@ int connect(int sock, const struct sockaddr *addr, unsigned int len) {
 
 static struct gethostbyname_data ghbndata;
 struct hostent *gethostbyname(const char *name) {
+	size_t i;
+
 	INIT();
 
 	PDEBUG("gethostbyname: %s\n", name);
