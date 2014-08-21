@@ -421,6 +421,7 @@ struct hostent *gethostbyname(const char *name) {
 
 int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
 	int ret = 0;
+	size_t i;
 
 	INIT();
 
