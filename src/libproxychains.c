@@ -44,6 +44,7 @@
 #define     SOCKPORT(x)     (satosin(x)->sin_port)
 #define     SOCKFAMILY(x)     (satosin(x)->sin_family)
 #define     MAX_CHAIN 512
+#define     MAX_DOMAIN_LENGTH 1024
 
 close_t true_close;
 connect_t true_connect;
@@ -66,6 +67,8 @@ int proxychains_resolver = 0;
 localaddr_arg localnet_addr[MAX_LOCALNET];
 size_t num_localnet_addr = 0;
 unsigned int remote_dns_subnet = 224;
+char localdomain[MAX_LOCALNET][MAX_DOMAIN_LENGTH];
+size_t num_localdomain = 0;
 
 pthread_once_t init_once = PTHREAD_ONCE_INIT;
 
@@ -283,6 +286,22 @@ static void get_chain_data(proxy_data * pd, unsigned int *proxy_count, chain_typ
 					} else {
 						fprintf(stderr, "# of localnet exceed %d.\n", MAX_LOCALNET);
 					}
+				} else if(strstr(buff, "localdomain")) {
+					if(sscanf(buff, "%s %s", user, host) < 2) {
+						fprintf(stderr, "localdomain format error");
+						exit(1);
+					}
+
+					if(num_localnet_addr < MAX_LOCALNET) {
+						int error;
+						if(!strncpy(localdomain[num_localdomain], host, strlen(host)) {
+							fprintf(stderr, "localdomain copy error\n");
+							exit(1);
+						}
+						++num_localnet_addr;
+					} else {
+						fprintf(stderr, "# of localdomain exceed %d.\n", MAX_LOCALNET);
+					}
 				} else if(strstr(buff, "chain_len")) {
 					char *pc;
 					int len;
@@ -382,6 +401,13 @@ struct hostent *gethostbyname(const char *name) {
 	INIT();
 
 	PDEBUG("gethostbyname: %s\n", name);
+
+	for(i = 0; i < num_localdomain; i++) {
+		if(strncmp(localdomain[i], name, strlen(localdomain[i])) == 0) {
+			PDEBUG("accessing localdomain using true_gethostbyname\n");
+			return true_gethostbyname(name);
+		}
+	}
 
 	if(proxychains_resolver)
 		return proxy_gethostbyname(name, &ghbndata);
