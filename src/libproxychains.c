@@ -297,6 +297,7 @@ static void get_chain_data(proxy_data * pd, unsigned int *proxy_count, chain_typ
 							fprintf(stderr, "localdomain copy error\n");
 							exit(1);
 						}
+						PDEBUG("added localdomain: %s\n", localdomain[num_localdomain]);
 						++num_localnet_addr;
 					} else {
 						fprintf(stderr, "# of localdomain exceed %d.\n", MAX_LOCALNET);
@@ -424,6 +425,13 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
 	INIT();
 
 	PDEBUG("getaddrinfo: %s %s\n", node ? node : "null", service ? service : "null");
+
+	for(i = 0; i < num_localdomain; i++) {
+		if(strncmp(localdomain[i], node, strlen(localdomain[i])) == 0) {
+			PDEBUG("accessing localdomain using true_getaddrinfo\n");
+			return true_getaddrinfo(node, service, hints, res);
+		}
+	}
 
 	if(proxychains_resolver)
 		ret = proxy_getaddrinfo(node, service, hints, res);
